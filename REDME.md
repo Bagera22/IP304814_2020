@@ -1,0 +1,1 @@
+Skoleprosjekt IP304814 for innsamling av data fra sensorplatform på båt og visualisering av data
