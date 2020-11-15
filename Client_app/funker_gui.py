@@ -22,7 +22,7 @@ def on_message_roll(client, userdata, msg):
 
 def on_message_pitch(client, userdata, msg):
     print(msg.topic+" "+str(msg.payload))
-    pitch.configure(text=str("Pitch: " + msg.payload.decode("utf-8") + "Deg  ", font=myFont))
+    pitch.configure(text=str("Pitch: " + msg.payload.decode("utf-8") + "Deg  "), font=myFont)
 
 def on_message_temp(client, userdata, msg):
     print(msg.topic+" "+str(msg.payload))

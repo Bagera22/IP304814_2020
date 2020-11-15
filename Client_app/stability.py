@@ -8,6 +8,9 @@ import paho.mqtt.client as mqtt
 nyroll = float(0)
 nypitch = float(0)
 nyheading = float(0)
+roll = float(0)
+pitch = float(0)
+yaw = float(0)
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
@@ -30,6 +33,12 @@ def on_message_pitch(client, userdata, msg):
     print(msg.topic+" "+str(msg.payload))
     step = msg.payload.decode("utf-8")
     nypitch = float(step)
+
+def verdier(roll, pitch, yaw):
+    roll = nyroll*toRad
+    pitch = nypitch*toRad
+    yaw = nyheading*toRad+np.pi
+
 
 client = mqtt.Client()
 client.on_connect = on_connect
@@ -67,6 +76,7 @@ while (True):
     roll=nyroll*toRad
     pitch=nypitch*toRad
     yaw=nyheading*toRad+np.pi
+
     print("Roll=",roll*toDeg," Pitch=",pitch*toDeg,"Yaw=",yaw*toDeg)
     rate(50)
     k=vector(cos(yaw)*cos(pitch), sin(pitch),sin(yaw)*cos(pitch))
