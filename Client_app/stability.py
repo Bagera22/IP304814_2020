@@ -28,7 +28,8 @@ def on_message_roll(client, userdata, msg):
 
 def on_message_pitch(client, userdata, msg):
     print(msg.topic+" "+str(msg.payload))
-    nypitch = float(msg.payload.decode("utf-8"))
+    step = msg.payload.decode("utf-8")
+    nypitch = float(step)
 
 client = mqtt.Client()
 client.on_connect = on_connect
