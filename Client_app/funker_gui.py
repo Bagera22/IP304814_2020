@@ -30,7 +30,13 @@ def on_message_temp(client, userdata, msg):
 
 def on_message_gps(client, userdata, msg):
     print(msg.topic+" "+str(msg.payload))
-    gps.configure(text=str("GPS: " + msg.payload.decode("utf-8") + "N  "), font=myFont)
+    dataPacket=str(msg.payload.decode("utf-8"))
+    splitPacket=dataPacket.split(",")
+    gps.configure(text=str("GPS: " + splitPacket(0) + "N  " + splitPacket(1) + "E "), font=myFont)
+
+def on_message_vind(client, userdata, msg):
+    print(msg.topic+" "+str(msg.payload))
+    vind.configure(text=str("Vind: " + msg.payload.decode("utf-8") + "m/s  "), font=myFont)
 
 client = mqtt.Client()
 client.on_connect = on_connect
@@ -39,6 +45,7 @@ client.message_callback_add('box/roll', on_message_roll)
 client.message_callback_add('box/pitch', on_message_pitch)
 client.message_callback_add('box/temp', on_message_temp)
 client.message_callback_add('box/gps', on_message_gps)
+client.message_callback_add('box/vind', on_message_vind)
 # client.on_message = on_message
 client.connect("mqtt.eclipse.org", 1883, 60)
 client.loop_start()
@@ -64,5 +71,7 @@ temp = Label(window, text=("Temp: " + "111" + " C  "), font=myFont)
 temp.grid(row=0, column=1)
 gps = Label(window, text=("GPS: " + "111" + " N  "), font=myFont)
 gps.grid(row=1, column=1)
+vind = Label(window, text=("Vind: " + "111" + " m/s  "), font=myFont)
+vind.grid(row=2, column=1)
 
 window.mainloop()

@@ -5,12 +5,6 @@ import math
 import serial
 import paho.mqtt.client as mqtt
 
-nyroll = float(0)
-nypitch = float(0)
-nyheading = float(0)
-roll = float(0)
-pitch = float(0)
-yaw = float(0)
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
@@ -21,32 +15,38 @@ def on_connect(client, userdata, flags, rc):
     client.subscribe("box/#")
 
 # The callback for when a PUBLISH message is received from the server.
-def on_message_heading(client, userdata, msg):
+def on_message_3D(client, userdata, msg):
     print(msg.topic+" "+str(msg.payload))
-    nyheading = float(msg.payload.decode("utf-8"))
+    #dataPacket=ad.readline()
+    dataPacket=str(msg.payload.decode("utf-8"))
+    splitPacket=dataPacket.split(",")
+    roll=float(splitPacket(0))*toRad
+    pitch=float(splitPacket(1))*toRad
+    yaw=float(splitPacket(2))*toRad+np.pi
 
-def on_message_roll(client, userdata, msg):
-    print(msg.topic+" "+str(msg.payload))
-    nyroll = float(msg.payload.decode("utf-8"))
-
-def on_message_pitch(client, userdata, msg):
-    print(msg.topic+" "+str(msg.payload))
-    step = msg.payload.decode("utf-8")
-    nypitch = float(step)
-
-def verdier(roll, pitch, yaw):
-    roll = nyroll*toRad
-    pitch = nypitch*toRad
-    yaw = nyheading*toRad+np.pi
+    print("Roll=",roll*toDeg," Pitch=",pitch*toDeg,"Yaw=",yaw*toDeg)
+    rate(50)
+    k=vector(cos(yaw)*cos(pitch), sin(pitch),sin(yaw)*cos(pitch))
+    y=vector(0,1,0)
+    s=cross(k,y)
+    v=cross(s,k)
+    vrot=v*cos(roll)+cross(k,v)*sin(roll)
+ 
+    frontArrow.axis=k
+    sideArrow.axis=cross(k,vrot)
+    upArrow.axis=vrot
+    myObj.axis=k
+    myObj.up=vrot
+    sideArrow.length=2
+    frontArrow.length=4
+    upArrow.length=1
 
 
 client = mqtt.Client()
 client.on_connect = on_connect
-client.message_callback_add('box/heading', on_message_heading)
-client.message_callback_add('box/roll', on_message_roll)
-client.message_callback_add('box/pitch', on_message_pitch)
+client.message_callback_add('box/3D', on_message_3D)
 client.connect("mqtt.eclipse.org", 1883, 60)
-client.loop_start()
+
 
 scene.range=5
 toRad=2*np.pi/360
@@ -68,27 +68,28 @@ bBoard=box(length=6,width=2,height=.2,opacity=.8,pos=vector(0,0,0,))
 bn=box(length=1,width=.75,height=.1, pos=vector(-.5,.1+.05,0),color=color.blue)
 nano=box(lenght=1.75,width=.6,height=.1,pos=vector(-2,.1+.05,0),color=color.green)
 myObj=compound([bBoard,bn,nano])
-while (True):
+client.loop_forever
+#while (True):
     
     #dataPacket=ad.readline()
     #dataPacket=str(dataPacket,'utf-8')
     #splitPacket=dataPacket.split(",")
-    roll=nyroll*toRad
-    pitch=nypitch*toRad
-    yaw=nyheading*toRad+np.pi
+    #roll=nyroll*toRad
+    #pitch=nypitch*toRad
+    #yaw=nyheading*toRad+np.pi
 
-    print("Roll=",roll*toDeg," Pitch=",pitch*toDeg,"Yaw=",yaw*toDeg)
-    rate(50)
-    k=vector(cos(yaw)*cos(pitch), sin(pitch),sin(yaw)*cos(pitch))
-    y=vector(0,1,0)
-    s=cross(k,y)
-    v=cross(s,k)
+    #print("Roll=",roll*toDeg," Pitch=",pitch*toDeg,"Yaw=",yaw*toDeg)
+    #rate(50)
+    #k=vector(cos(yaw)*cos(pitch), sin(pitch),sin(yaw)*cos(pitch))
+    #y=vector(0,1,0)
+    #s=cross(k,y)
+    #v=cross(s,k)
 
-    frontArrow.axis=k
-    sideArrow.axis=s
-    upArrow.axis=v
-    myObj.axis=k
-    myObj.up=v
-    sideArrow.length=2
-    frontArrow.length=4
-    upArrow.length=1
+    #frontArrow.axis=k
+    #sideArrow.axis=s
+    #upArrow.axis=v
+    #myObj.axis=k
+    #myObj.up=v
+    #sideArrow.length=2
+    #frontArrow.length=4
+    #upArrow.length=1
