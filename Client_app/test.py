@@ -28,6 +28,9 @@ def setPitch():
 def setTemp():
     client.publish("box/temp", verdi.get())
 
+def set3D():
+    client.publish("box/3D", verdi.get() + " , 123 , 132")
+
 
 client = mqtt.Client()
 client.on_connect = on_connect
@@ -46,5 +49,8 @@ pitch.pack()
 
 temp = Button(root, text="temp", command=setTemp)
 temp.pack()
+
+S3D = Button(root, text="3D", command=set3D)
+S3D.pack()
 
 root.mainloop()

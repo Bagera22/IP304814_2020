@@ -31,8 +31,7 @@ def on_message_temp(client, userdata, msg):
 def on_message_gps(client, userdata, msg):
     print(msg.topic+" "+str(msg.payload))
     dataPacket=str(msg.payload.decode("utf-8"))
-    splitPacket=dataPacket.split(",")
-    gps.configure(text=str("GPS: " + splitPacket(0) + "N  " + splitPacket(1) + "E "), font=myFont)
+    gps.configure(text="GPS: " + dataPacket, font=myFont)
 
 def on_message_vind(client, userdata, msg):
     print(msg.topic+" "+str(msg.payload))
@@ -59,7 +58,7 @@ client.loop_start()
 
 window = Tk()
 myFont = font.Font(family='Helvetica', size=20, weight='bold')
-window.geometry('400x200')
+window.geometry('700x200')
 window.title("Welcome to Brage app")
 heading = Label(window, text=("Heading: " + "111" + " N  "), font=myFont)
 heading.grid(row=0, column=0)

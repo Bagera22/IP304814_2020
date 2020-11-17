@@ -1,9 +1,10 @@
-from vpython import *
-from time import *
-import numpy as np
 import math
-import serial
+from time import *
+
+import numpy as np
 import paho.mqtt.client as mqtt
+import serial
+from vpython import *
 
 
 # The callback for when the client receives a CONNACK response from the server.
@@ -12,17 +13,19 @@ def on_connect(client, userdata, flags, rc):
 
     # Subscribing in on_connect() means that if we lose the connection and
     # reconnect then subscriptions will be renewed.
-    client.subscribe("box/#")
+    client.subscribe("box/3D")
 
 # The callback for when a PUBLISH message is received from the server.
-def on_message_3D(client, userdata, msg):
+def on_message(client, userdata, msg):
+    print("here")
     print(msg.topic+" "+str(msg.payload))
     #dataPacket=ad.readline()
     dataPacket=str(msg.payload.decode("utf-8"))
+    print(dataPacket)
     splitPacket=dataPacket.split(",")
-    roll=float(splitPacket(0))*toRad
-    pitch=float(splitPacket(1))*toRad
-    yaw=float(splitPacket(2))*toRad+np.pi
+    roll=float(splitPacket[0])*toRad
+    pitch=float(splitPacket[1])*toRad
+    yaw=float(splitPacket[2])*toRad+np.pi
 
     print("Roll=",roll*toDeg," Pitch=",pitch*toDeg,"Yaw=",yaw*toDeg)
     rate(50)
@@ -44,8 +47,10 @@ def on_message_3D(client, userdata, msg):
 
 client = mqtt.Client()
 client.on_connect = on_connect
-client.message_callback_add('box/3D', on_message_3D)
+client.on_message=on_message
 client.connect("mqtt.eclipse.org", 1883, 60)
+
+
 
 
 scene.range=5
@@ -68,7 +73,7 @@ bBoard=box(length=6,width=2,height=.2,opacity=.8,pos=vector(0,0,0,))
 bn=box(length=1,width=.75,height=.1, pos=vector(-.5,.1+.05,0),color=color.blue)
 nano=box(lenght=1.75,width=.6,height=.1,pos=vector(-2,.1+.05,0),color=color.green)
 myObj=compound([bBoard,bn,nano])
-client.loop_forever
+client.loop_forever()
 #while (True):
     
     #dataPacket=ad.readline()
