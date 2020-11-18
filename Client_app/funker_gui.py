@@ -37,6 +37,10 @@ def on_message_vind(client, userdata, msg):
     print(msg.topic+" "+str(msg.payload))
     vind.configure(text=str("Vind: " + msg.payload.decode("utf-8") + "m/s  "), font=myFont)
 
+def on_message_trykk(client, userdata, msg):
+    print(msg.topic+" "+str(msg.payload))
+    trykk.configure(text=str("Pressure: " + msg.payload.decode("utf-8") + "Pa  "), font=myFont)
+
 client = mqtt.Client()
 client.on_connect = on_connect
 client.message_callback_add('box/heading', on_message_heading)
@@ -45,6 +49,7 @@ client.message_callback_add('box/pitch', on_message_pitch)
 client.message_callback_add('box/temp', on_message_temp)
 client.message_callback_add('box/gps', on_message_gps)
 client.message_callback_add('box/vind', on_message_vind)
+client.message_callback_add('box/trykk', on_message_trykk)
 # client.on_message = on_message
 client.connect("mqtt.eclipse.org", 1883, 60)
 client.loop_start()
@@ -72,5 +77,7 @@ gps = Label(window, text=("GPS: " + "111" + " N  "), font=myFont)
 gps.grid(row=1, column=1)
 vind = Label(window, text=("Vind: " + "111" + " m/s  "), font=myFont)
 vind.grid(row=2, column=1)
+trykk = Label(window, text=("Pressure: " + "111" + " Pa  "), font=myFont)
+trykk.grid(row=3, column=1)
 
 window.mainloop()
