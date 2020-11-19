@@ -35,22 +35,19 @@ def on_message_temp(client, userdata, msg):
     global data
     temp.configure(text=str("Temp: " + msg.payload.decode("utf-8") + "C  "), font=myFont)
     dataPacket=float(msg.payload.decode('utf-8'))
-    if(len(data) < 500):
+    if(len(data) < 50):
         data = np.append(data, dataPacket)
     else:
         data[0:49] = data[1:50]
         data[49] = dataPacket
-    
-    lines.set_xdata(np.arange(0,len(data)))
-    lines.set_ydata(data)
 
-    canvas.draw()
+    print(data[0])
+    print(data[len(data)-1])   
 
 def on_message_gps(client, userdata, msg):
     print(msg.topic+" "+str(msg.payload))
     dataPacket=str(msg.payload.decode("utf-8"))
     gps.configure(text="GPS: " + dataPacket, font=myFont)
-
 
 def on_message_vind(client, userdata, msg):
     print(msg.topic+" "+str(msg.payload))
@@ -61,6 +58,14 @@ def on_message_trykk(client, userdata, msg):
     trykk.configure(text=str("Pressure: " + msg.payload.decode("utf-8") + "Pa  "), font=myFont)
 
 
+def update_graph():
+
+    global data
+
+    lines.set_xdata(np.arange(0,len(data)))
+    lines.set_ydata(data)
+    canvas.draw()
+    window.after(10,update_graph)
 
 
 client = mqtt.Client()
@@ -85,10 +90,10 @@ client.loop_start()
 
 window = Tk()
 myFont = font.Font(family='Helvetica', size=20, weight='bold')
-window.geometry('700x200')
+# window.geometry('700x200')
 window.title("Welcome to Box app")
 
-fig = Figure();
+fig = Figure()
 ax = fig.add_subplot(111)
 
 ax.set_title('Temp')
@@ -100,6 +105,10 @@ lines = ax.plot([],[])[0]
 
 canvas = FigureCanvasTkAgg(fig, master=window)
 canvas.get_tk_widget().grid(row=0, column=3)
+
+lines.set_xdata(np.arange(0,len(data)))
+lines.set_ydata(data)
+
 canvas.draw()
 
 
@@ -117,5 +126,7 @@ vind = Label(window, text=("Vind: " + "111" + " m/s  "), font=myFont)
 vind.grid(row=2, column=1)
 trykk = Label(window, text=("Pressure: " + "111" + " Pa  "), font=myFont)
 trykk.grid(row=3, column=1)
+
+window.after(10,update_graph)
 
 window.mainloop()
