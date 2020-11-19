@@ -1,6 +1,12 @@
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
 import paho.mqtt.client as mqtt
 from tkinter import *
 import tkinter.font as font
+import numpy as np
+import serial as sr
+
+data = np.array([])
 
 
 # The callback for when the client receives a CONNACK response from the server.
@@ -26,12 +32,25 @@ def on_message_pitch(client, userdata, msg):
 
 def on_message_temp(client, userdata, msg):
     print(msg.topic+" "+str(msg.payload))
+    global data
     temp.configure(text=str("Temp: " + msg.payload.decode("utf-8") + "C  "), font=myFont)
+    dataPacket=float(msg.payload.decode('utf-8'))
+    if(len(data) < 500):
+        data = np.append(data, dataPacket)
+    else:
+        data[0:49] = data[1:50]
+        data[49] = dataPacket
+    
+    lines.set_xdata(np.arange(0,len(data)))
+    lines.set_ydata(data)
+
+    canvas.draw()
 
 def on_message_gps(client, userdata, msg):
     print(msg.topic+" "+str(msg.payload))
     dataPacket=str(msg.payload.decode("utf-8"))
     gps.configure(text="GPS: " + dataPacket, font=myFont)
+
 
 def on_message_vind(client, userdata, msg):
     print(msg.topic+" "+str(msg.payload))
@@ -40,6 +59,9 @@ def on_message_vind(client, userdata, msg):
 def on_message_trykk(client, userdata, msg):
     print(msg.topic+" "+str(msg.payload))
     trykk.configure(text=str("Pressure: " + msg.payload.decode("utf-8") + "Pa  "), font=myFont)
+
+
+
 
 client = mqtt.Client()
 client.on_connect = on_connect
@@ -65,6 +87,22 @@ window = Tk()
 myFont = font.Font(family='Helvetica', size=20, weight='bold')
 window.geometry('700x200')
 window.title("Welcome to Box app")
+
+fig = Figure();
+ax = fig.add_subplot(111)
+
+ax.set_title('Temp')
+ax.set_xlabel('Sample')
+ax.set_ylabel('C')
+ax.set_xlim(0,50)
+ax.set_ylim(-15,40)
+lines = ax.plot([],[])[0]
+
+canvas = FigureCanvasTkAgg(fig, master=window)
+canvas.get_tk_widget().grid(row=0, column=3)
+canvas.draw()
+
+
 heading = Label(window, text=("Heading: " + "111" + " N  "), font=myFont)
 heading.grid(row=0, column=0)
 roll = Label(window, text=("Roll: " + "111" + " Deg  "), font=myFont)
