@@ -6,7 +6,8 @@ import tkinter.font as font
 import numpy as np
 import serial as sr
 
-data = np.array([])
+DataTemp = np.array([])
+DataWind = np.array([])
 
 
 # The callback for when the client receives a CONNACK response from the server.
@@ -32,17 +33,17 @@ def on_message_pitch(client, userdata, msg):
 
 def on_message_temp(client, userdata, msg):
     print(msg.topic+" "+str(msg.payload))
-    global data
+    global DataTemp
     temp.configure(text=str("Temp: " + msg.payload.decode("utf-8") + "C  "), font=myFont)
     dataPacket=float(msg.payload.decode('utf-8'))
-    if(len(data) < 50):
-        data = np.append(data, dataPacket)
+    if(len(DataTemp) < 50):
+        DataTemp = np.append(DataTemp, dataPacket)
     else:
-        data[0:49] = data[1:50]
-        data[49] = dataPacket
+        DataTemp[0:49] = DataTemp[1:50]
+        DataTemp[49] = dataPacket
 
-    print(data[0])
-    print(data[len(data)-1])   
+    print(DataTemp[0])
+    print(DataTemp[len(DataTemp)-1])   
 
 def on_message_gps(client, userdata, msg):
     print(msg.topic+" "+str(msg.payload))
@@ -52,6 +53,16 @@ def on_message_gps(client, userdata, msg):
 def on_message_vind(client, userdata, msg):
     print(msg.topic+" "+str(msg.payload))
     vind.configure(text=str("Vind: " + msg.payload.decode("utf-8") + "m/s  "), font=myFont)
+    global DataWind
+    dataPacket=float(msg.payload.decode('utf-8'))
+    if(len(DataWind) < 50):
+        DataWind = np.append(DataWind, dataPacket)
+    else:
+        DataWind[0:49] = DataWind[1:50]
+        DataTemp[49] = dataPacket
+
+    print(DataWind[0])
+    print(DataWind[len(DataWind)-1]) 
 
 def on_message_trykk(client, userdata, msg):
     print(msg.topic+" "+str(msg.payload))
@@ -60,11 +71,15 @@ def on_message_trykk(client, userdata, msg):
 
 def update_graph():
 
-    global data
+    global DataTemp
+    global DataWind
 
-    lines.set_xdata(np.arange(0,len(data)))
-    lines.set_ydata(data)
+    lines.set_xdata(np.arange(0,len(DataTemp)))
+    lines.set_ydata(DataTemp)
     canvas.draw()
+    lines2.set_xdata(np.arange(0,len(DataWind)))
+    lines2.set_ydata(DataWind)
+    canvas2.draw()
     window.after(10,update_graph)
 
 
@@ -93,21 +108,31 @@ myFont = font.Font(family='Helvetica', size=20, weight='bold')
 # window.geometry('700x200')
 window.title("Welcome to Box app")
 
-fig = Figure()
-ax = fig.add_subplot(111)
+fig1 = Figure()
+fig2 = Figure()
+tg = fig1.add_subplot(111)
+vg = fig2.add_subplot(111)
 
-ax.set_title('Temp')
-ax.set_xlabel('Sample')
-ax.set_ylabel('C')
-ax.set_xlim(0,50)
-ax.set_ylim(-15,40)
-lines = ax.plot([],[])[0]
+tg.set_title('Temp')
+tg.set_xlabel('Sample')
+tg.set_ylabel('C')
+tg.set_xlim(0,50)
+tg.set_ylim(-15,40)
+tg_height = (3,2)
+lines = tg.plot([],[])[0]
 
-canvas = FigureCanvasTkAgg(fig, master=window)
+vg.set_title('Wind')
+vg.set_xlabel('Sample')
+vg.set_ylabel('m/s')
+vg.set_xlim(0,50)
+vg.set_ylim(-2,30)
+
+lines2 = vg.plot([],[])[0]
+
+canvas = FigureCanvasTkAgg(fig1, master=window)
 canvas.get_tk_widget().grid(row=0, column=3)
-
-lines.set_xdata(np.arange(0,len(data)))
-lines.set_ydata(data)
+canvas2 = FigureCanvasTkAgg(fig2, master=window)
+canvas2.get_tk_widget().grid(row=1, column=3)
 
 canvas.draw()
 

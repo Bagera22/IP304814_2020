@@ -28,6 +28,9 @@ def setPitch():
 def setTemp():
     client.publish("box/temp", verdi.get())
 
+def setWind():
+    client.publish("box/vind", verdi.get())
+
 def set3D():
     client.publish("box/3D", verdi.get() + " , 123 , 132")
 
@@ -52,5 +55,8 @@ temp.pack()
 
 S3D = Button(root, text="3D", command=set3D)
 S3D.pack()
+
+wind = Button(root, text="wind", command=setWind)
+wind.pack()
 
 root.mainloop()
