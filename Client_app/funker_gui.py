@@ -51,15 +51,19 @@ def on_message_gps(client, userdata, msg):
     gps.configure(text="GPS: " + dataPacket, font=myFont)
 
 def on_message_vind(client, userdata, msg):
-    print(msg.topic+" "+str(msg.payload))
-    vind.configure(text=str("Vind: " + msg.payload.decode("utf-8") + "m/s  "), font=myFont)
+    print(msg.topic+" "+str(msg.payload) + "hahaha")
+    wind = str(msg.payload.decode("utf-8"))
+    if "\r\n" in wind:
+        wind = wind.replace("\r\n", "")
+        
+    vind.configure(text=str("Vind: " + wind  + "m/s  "), font=myFont)
     global DataWind
     dataPacket=float(msg.payload.decode('utf-8'))
     if(len(DataWind) < 50):
         DataWind = np.append(DataWind, dataPacket)
     else:
         DataWind[0:49] = DataWind[1:50]
-        DataTemp[49] = dataPacket
+        DataWind[49] = dataPacket
 
     print(DataWind[0])
     print(DataWind[len(DataWind)-1]) 
