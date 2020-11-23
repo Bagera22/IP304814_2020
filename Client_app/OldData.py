@@ -20,6 +20,8 @@ def on_open():
     Wind = []
     Praser = []
     roll = []
+    hading = []
+    pitch = []
     global skipfirst
     print("1")
     with open(verdi.get()+".csv") as csvfile:
@@ -27,9 +29,13 @@ def on_open():
         for row in readCSV:
             if not skipfirst:
                 temp.append(float(row[5]))
+                if "0-" in row[6]:
+                    row[6] = row[6].replace("0-", "")
                 Wind.append(float(row[6]))
                 Praser.append(float(row[4]))
                 roll.append(float(row[1]))
+                hading.append(float(row[3]))
+                pitch.append(float(row[2]))
             skipfirst = False
         print("1")
             
@@ -37,10 +43,14 @@ def on_open():
         fig2 = Figure()
         fig3 = Figure()
         fig4 = Figure()
+        fig5 = Figure()
+        fig6 = Figure()
         tg = fig1.add_subplot(111)
         vg = fig2.add_subplot(111)
         pg = fig3.add_subplot(111)
         rg = fig4.add_subplot(111)
+        hg = fig5.add_subplot(111)
+        pig = fig6.add_subplot(111)
         print(temp)
 
         tg.set_title('Temp')
@@ -73,6 +83,20 @@ def on_open():
         rg.set_ylim(-180,180)
         lines4 = rg.plot(np.arange(0,len(roll)),roll)[0]
 
+        hg.set_title('Heading')
+        hg.set_xlabel('Sample')
+        hg.set_ylabel('Deg')
+        hg.set_xlim(0,len(roll)-1)
+        hg.set_ylim(0,360)
+        lines5 = hg.plot(np.arange(0,len(hading)),hading)[0]
+
+        pig.set_title('Pitch')
+        pig.set_xlabel('Sample')
+        pig.set_ylabel('Deg')
+        pig.set_xlim(0,len(roll)-1)
+        pig.set_ylim(-180,180)
+        lines6 = pig.plot(np.arange(0,len(pitch)),pitch)[0]
+
         canvas = FigureCanvasTkAgg(fig1, master=root)
         canvas.get_tk_widget().grid(row=1, column=1)
         canvas2 = FigureCanvasTkAgg(fig2, master=root)
@@ -81,6 +105,10 @@ def on_open():
         canvas3.get_tk_widget().grid(row=1, column=2)
         canvas4 = FigureCanvasTkAgg(fig4, master=root)
         canvas4.get_tk_widget().grid(row=2, column=2)
+        canvas5 = FigureCanvasTkAgg(fig5, master=root)
+        canvas5.get_tk_widget().grid(row=1, column=3)
+        canvas6 = FigureCanvasTkAgg(fig6, master=root)
+        canvas6.get_tk_widget().grid(row=2, column=3)
         
 
         canvas.draw()

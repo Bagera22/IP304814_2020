@@ -8,7 +8,7 @@ import serial as sr
 
 DataTemp = np.array([])
 DataWind = np.array([])
-
+DataPraser = np.array([])
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
@@ -55,7 +55,9 @@ def on_message_vind(client, userdata, msg):
     wind = str(msg.payload.decode("utf-8"))
     if "\r\n" in wind:
         wind = wind.replace("\r\n", "")
-        
+    if "0-" in wind:
+        wind = wind.replace("0-", "") 
+    
     vind.configure(text=str("Vind: " + wind  + "m/s  "), font=myFont)
     global DataWind
     dataPacket=float(msg.payload.decode('utf-8'))
@@ -71,6 +73,16 @@ def on_message_vind(client, userdata, msg):
 def on_message_trykk(client, userdata, msg):
     print(msg.topic+" "+str(msg.payload))
     trykk.configure(text=str("Pressure: " + msg.payload.decode("utf-8") + "Pa  "), font=myFont)
+    global DataPraser
+    dataPacket=float(msg.payload.decode('utf-8'))
+    if(len(DataPraser) < 50):
+        DataPraser = np.append(DataPraser, dataPacket)
+    else:
+        DataPraser[0:49] = DataPraser[1:50]
+        DataPraser[49] = dataPacket
+
+    print(DataPraser[0])
+    print(DataPraser[len(DataPraser)-1])
 
 
 def update_graph():
@@ -84,7 +96,73 @@ def update_graph():
     lines2.set_xdata(np.arange(0,len(DataWind)))
     lines2.set_ydata(DataWind)
     canvas2.draw()
+    lines3.set_xdata(np.arange(0,len(DataPraser)))
+    lines3.set_ydata(DataPraser)
+    canvas3.draw()
     window.after(10,update_graph)
+
+
+window = Tk()
+myFont = font.Font(family='Helvetica', size=20, weight='bold')
+# window.geometry('700x200')
+window.title("Welcome to Box app")
+
+fig1 = Figure()
+fig2 = Figure()
+fig3 = Figure()
+tg = fig1.add_subplot(111)
+vg = fig2.add_subplot(111)
+pg = fig3.add_subplot(111)
+
+tg.set_title('Temp')
+tg.set_xlabel('Sample')
+tg.set_ylabel('C')
+tg.set_xlim(0,50)
+tg.set_ylim(-15,40)
+tg_height = (3,2)
+lines = tg.plot([],[])[0]
+
+vg.set_title('Wind')
+vg.set_xlabel('Sample')
+vg.set_ylabel('m/s')
+vg.set_xlim(0,50)
+vg.set_ylim(-2,30)
+
+lines2 = vg.plot([],[])[0]
+
+fig3 = Figure()
+pg = fig3.add_subplot(111)
+pg.set_title('Pressure')
+pg.set_xlabel('Sample')
+pg.set_ylabel('Pa')
+pg.set_xlim(0,50)
+pg.set_ylim(500,1200)
+lines3 = pg.plot([],[])[0]
+
+canvas = FigureCanvasTkAgg(fig1, master=window)
+canvas.get_tk_widget().grid(row=0, column=3)
+canvas2 = FigureCanvasTkAgg(fig2, master=window)
+canvas2.get_tk_widget().grid(row=1, column=3)
+canvas3 = FigureCanvasTkAgg(fig3, master=window)
+canvas3.get_tk_widget().grid(row=0, column=4)
+
+canvas.draw()
+
+
+heading = Label(window, text=("Heading: " + "111" + " N  "), font=myFont)
+heading.grid(row=0, column=0)
+roll = Label(window, text=("Roll: " + "111" + " Deg  "), font=myFont)
+roll.grid(row=1, column=0)
+pitch = Label(window, text=("Pitch: " + "111" + " Deg  "), font=myFont)
+pitch.grid(row=2, column=0)
+temp = Label(window, text=("Temp: " + "111" + " C  "), font=myFont)
+temp.grid(row=0, column=1)
+gps = Label(window, text=("GPS: " + "111" + " N  "), font=myFont)
+gps.grid(row=1, column=1)
+vind = Label(window, text=("Vind: " + "111" + " m/s  "), font=myFont)
+vind.grid(row=2, column=1)
+trykk = Label(window, text=("Pressure: " + "111" + " Pa  "), font=myFont)
+trykk.grid(row=3, column=1)
 
 
 client = mqtt.Client()
@@ -107,54 +185,6 @@ client.loop_start()
 
 
 
-window = Tk()
-myFont = font.Font(family='Helvetica', size=20, weight='bold')
-# window.geometry('700x200')
-window.title("Welcome to Box app")
-
-fig1 = Figure()
-fig2 = Figure()
-tg = fig1.add_subplot(111)
-vg = fig2.add_subplot(111)
-
-tg.set_title('Temp')
-tg.set_xlabel('Sample')
-tg.set_ylabel('C')
-tg.set_xlim(0,50)
-tg.set_ylim(-15,40)
-tg_height = (3,2)
-lines = tg.plot([],[])[0]
-
-vg.set_title('Wind')
-vg.set_xlabel('Sample')
-vg.set_ylabel('m/s')
-vg.set_xlim(0,50)
-vg.set_ylim(-2,30)
-
-lines2 = vg.plot([],[])[0]
-
-canvas = FigureCanvasTkAgg(fig1, master=window)
-canvas.get_tk_widget().grid(row=0, column=3)
-canvas2 = FigureCanvasTkAgg(fig2, master=window)
-canvas2.get_tk_widget().grid(row=1, column=3)
-
-canvas.draw()
-
-
-heading = Label(window, text=("Heading: " + "111" + " N  "), font=myFont)
-heading.grid(row=0, column=0)
-roll = Label(window, text=("Roll: " + "111" + " Deg  "), font=myFont)
-roll.grid(row=1, column=0)
-pitch = Label(window, text=("Pitch: " + "111" + " Deg  "), font=myFont)
-pitch.grid(row=2, column=0)
-temp = Label(window, text=("Temp: " + "111" + " C  "), font=myFont)
-temp.grid(row=0, column=1)
-gps = Label(window, text=("GPS: " + "111" + " N  "), font=myFont)
-gps.grid(row=1, column=1)
-vind = Label(window, text=("Vind: " + "111" + " m/s  "), font=myFont)
-vind.grid(row=2, column=1)
-trykk = Label(window, text=("Pressure: " + "111" + " Pa  "), font=myFont)
-trykk.grid(row=3, column=1)
 
 window.after(10,update_graph)
 
